@@ -37,7 +37,7 @@ Simula cenários do campeonato utilizando modelos estatísticos como **Poisson**
 ---
 
 ## 📚 Documentação rápida
-
+* 📄Acesse a documentação online: https://mageskylms.github.io/scoreFootball/
 * 📄 Endpoints: [`/docs/endpoints.md`](./docs/endpoints.md)
 * 🔍 Swagger: http://localhost:8000/docs
 
