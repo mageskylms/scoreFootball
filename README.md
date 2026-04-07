@@ -1,8 +1,45 @@
-# ⚽ ScoreFootball - Analise e Previsão do Brasileirão Série A
+# ⚽ ScoreFootball 
+### Versão 1.15.0 - Abril de 2026
 
-Uma aplicação *full-stack* desenvolvida para fornecer análises estatísticas profundas, classificação em tempo real e previsões matemáticas do **Brasileirão Série A**.
+Plataforma de análise e previsão do Brasileirão baseada em dados reais.
 
-O sistema vai além da tabela tradicional: ele utiliza modelos estatísticos avançados (como **Distribuição de Poisson** e **Simulações de Monte Carlo**) para prever as chances de título, classificação para a Libertadores (G4/G6) e riscos de rebaixamento (Z4) de cada equipe.
+Simula cenários do campeonato utilizando modelos estatísticos como **Poisson** e **Monte Carlo** para estimar:
+
+* 🏆 Probabilidade de título
+* 📈 Chances de G4 / Libertadores
+* ⚠️ Risco de rebaixamento
+
+---
+
+## 🖥️ Interface
+
+### Tela de Classificação
+![Preview da Tela de Classificação](./docs/previews/preview_tela_classificacao.png)
+
+### Tela de Projeções
+![Preview da Tela de projeções](./docs/previews/preview_tela_projecoes.png)
+
+---
+
+## ⚡ Exemplo real de saída
+
+```json
+{
+  "time": "Palmeiras",
+  "chance_titulo_%": 72.5,
+  "chance_g4_%": 95.2,
+  "chance_rebaixamento_%": 0.1
+}
+```
+
+👉 A API transforma dados brutos em probabilidades acionáveis.
+
+---
+
+## 📚 Documentação rápida
+
+* 📄 Endpoints: [`/docs/endpoints.md`](./docs/endpoints.md)
+* 🔍 Swagger: http://localhost:8000/docs
 
 ---
 
@@ -22,6 +59,12 @@ O projeto foi construído em arquitetura de **Monorepo**, dividindo claramente a
 
 **Infraestrutura:**
 - **[Docker & Docker Compose](https://www.docker.com/):** Padronização do ambiente de desenvolvimento e deploy.
+
+## 🤖 Sobre o Frontend
+
+O frontend foi desenvolvido com apoio de ferramentas de IA para acelerar a prototipação e refinamento visual.
+
+A arquitetura, integração com a API e evolução do sistema são controladas manualmente.
 
 ---
 
@@ -72,24 +115,59 @@ scoreFootball/
     ├── index.html           # Estrutura visual e abas
     ├── style.css            # Estilização
     └── script.js            # Consumo da API e renderização do DOM
+└── docs/                    # Documentação da API
+    └── endpoints.md         # Descrição de cada rota da API
 ```
 
 ---
 
-## 🧠 Entendendo os Modelos Preditivos
+## 🧠 Modelos Preditivos
 
-A aplicação se destaca pelos seus métodos de previsão (disponíveis na camada `service.py`).
+A API utiliza diferentes abordagens estatísticas para projetar o desempenho das equipes ao longo do campeonato.
 
-> **⚠️ Importante sobre os dados:** Atualmente, **todos os cálculos preditivos utilizam estritamente os dados da temporada atual**. O sistema avalia o desempenho estatístico das equipes nas partidas já jogadas até o presente momento e simula os confrontos baseados exclusivamente na agenda de jogos que ainda virão pela frente. Não utilizamos, *por enquanto*, dados históricos de temporadas passadas na composição do algoritmo.
+### 📈 Tendência (Média e Frequência)
 
-Os modelos disponíveis são:
+Projeção baseada no desempenho atual das equipes:
 
-1. **Tendência de Média e Frequência:** Projeções lineares baseadas nos pontos atuais ou na proporção de Vitórias/Empates/Derrotas que os times conquistaram no campeonato vigente.
-2. **Power Ranking:** Avalia a força bruta atual de Ataque vs Defesa de cada equipe, cruzando com a média de gols global da liga, para revelar times que estão performando abaixo ou acima da sua qualidade técnica real.
-3. **Simulação Avançada e Monte Carlo:** O algoritmo projeta a tabela final executando o restante do campeonato milhares de vezes. Em cada partida futura simulada, os gols são "rolados" estatisticamente usando a **Distribuição de Poisson** (cruzando Ataque do Mandante x Defesa do Visitante), revelando as reais porcentagens matemáticas de chance de título, vagas em copas internacionais e rebaixamento.
+* Média de pontos por jogo
+* Frequência de vitórias, empates e derrotas
+
+---
+
+### ⚡ Power Ranking
+
+Avalia a força relativa dos times com base em:
+
+* Eficiência ofensiva (gols marcados)
+* Consistência defensiva (gols sofridos)
+
+Permite identificar equipes que estão performando acima ou abaixo do esperado.
+
+---
+
+### 🎲 Simulação (Poisson + Monte Carlo)
+
+As partidas futuras são simuladas utilizando:
+
+* **Distribuição de Poisson** → modela a quantidade de gols esperados por time
+* **Monte Carlo** → executa múltiplos cenários do campeonato
+
+Isso permite calcular probabilidades reais como:
+
+* Chance de título
+* Classificação para competições internacionais
+* Risco de rebaixamento
+
+---
+
+> ⚠️ **Limitação atual:** os cálculos utilizam apenas dados da temporada atual, sem considerar histórico de anos anteriores.
 
 ---
 
 ## 📄 Licença
 
-Este projeto é distribuído sob a licença **MIT**. Sinta-se livre para usar, estudar, modificar e distribuir este código da forma que achar melhor.
+**Copyright © 2024 ScoreFootball. Todos os direitos reservados.**
+
+O código-fonte deste projeto é disponibilizado apenas para **uso pessoal** e **estudo educacional**. 
+
+É **estritamente proibido** modificar, criar trabalhos derivados, distribuir, sublicenciar, comercializar ou utilizar este software (ou partes dele) em outros projetos sem a permissão expressa e por escrito do autor.

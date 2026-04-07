@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ScoreFootball API</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+
+    p {
+      color: #cbd5f5;
+      line-height: 1.6;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #22c55e;
+      color: #022c22;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+
+    pre {
+      background: #020617;
+      padding: 15px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .links a {
+      display: block;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <span class="badge">v1.15.0</span>
+
+    <h1>⚽ ScoreFootball API</h1>
+
+    <p>
+      API para análise e previsões do Brasileirão baseada em dados reais.
+      Gera probabilidades utilizando modelos estatísticos como Poisson e Monte Carlo.
+    </p>
+
+    <h2>⚡ Exemplo</h2>
+
+    <div class="card">
+      <pre>{
+  "time": "Palmeiras",
+  "chance_titulo_%": 72.5,
+  "chance_g4_%": 95.2,
+  "chance_rebaixamento_%": 0.1
+}</pre>
+    </div>
+
+    <h2>🚀 Começar</h2>
+
+    <div class="card links">
+      <a href="./endpoints.md">📄 Ver endpoints detalhados</a>
+      <a href="http://localhost:8000/docs" target="_blank">🔍 Swagger UI</a>
+    </div>
+
+    <h2>📊 Principais recursos</h2>
+
+    <div class="card">
+      <ul>
+        <li>📈 Projeção por média e frequência</li>
+        <li>⚡ Power Ranking (ataque vs defesa)</li>
+        <li>🎲 Simulação de Monte Carlo</li>
+        <li>📅 Próximos jogos organizados por rodada</li>
+      </ul>
+    </div>
+
+    <h2>🧠 Modelos</h2>
+
+    <div class="card">
+      <p><strong>Poisson:</strong> estima número de gols por time.</p>
+      <p><strong>Monte Carlo:</strong> simula milhares de cenários do campeonato.</p>
+    </div>
+
+    <h2>⚠️ Limitação</h2>
+
+    <div class="card">
+      <p>Os cálculos utilizam apenas dados da temporada atual.</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
