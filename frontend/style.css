@@ -990,6 +990,218 @@ table.proj-table th.sep {
     }
 }
 
+
+/* ─── SIMULAÇÕES ─── */
+.simul-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 1100px) {
+    .simul-grid { grid-template-columns: 1fr; }
+}
+
+table.mc-table,
+table.av-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 520px;
+}
+
+table.mc-table thead th,
+table.av-table thead th {
+    padding: 9px 14px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+    background: #0b0f0d;
+    text-align: center;
+}
+
+table.mc-table thead th:nth-child(2),
+table.av-table thead th:nth-child(2) {
+    text-align: left;
+}
+
+table.mc-table tbody tr,
+table.av-table tbody tr {
+    border-top: 1px solid #131a17;
+    transition: background .15s;
+}
+
+table.mc-table tbody tr:hover,
+table.av-table tbody tr:hover {
+    background: #121918;
+}
+
+table.mc-table td,
+table.av-table td {
+    padding: 11px 14px;
+    font-size: 12px;
+    text-align: center;
+}
+
+table.mc-table td:nth-child(2),
+table.av-table td:nth-child(2) {
+    text-align: left;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.mc-pct-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.mc-pct-track {
+    flex: 1;
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+    min-width: 40px;
+}
+
+.mc-pct-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s cubic-bezier(.16,1,.3,1);
+}
+
+.mc-pct-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    width: 38px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.metodologia-box {
+    padding: 10px 20px;
+    font-size: 11px;
+    color: var(--muted2);
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    font-style: italic;
+}
+
+/* ─── PRÓXIMOS JOGOS ─── */
+.rodada-block {
+    border-bottom: 1px solid var(--border);
+}
+
+.rodada-block:last-child {
+    border-bottom: none;
+}
+
+.rodada-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: background .15s;
+}
+
+.rodada-header:hover {
+    background: var(--bg4);
+}
+
+.rodada-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 1.5px;
+    color: var(--cyan);
+}
+
+.rodada-count {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted2);
+}
+
+.rodada-toggle {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform .25s;
+}
+
+.rodada-toggle.open {
+    transform: rotate(180deg);
+}
+
+.rodada-jogos {
+    display: none;
+}
+
+.rodada-jogos.open {
+    display: block;
+    animation: fadeUp .2s ease;
+}
+
+.jogo-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 1fr;
+    align-items: center;
+    padding: 12px 24px;
+    border-bottom: 1px solid #131a17;
+    gap: 10px;
+    transition: background .15s;
+}
+
+.jogo-row:last-child {
+    border-bottom: none;
+}
+
+.jogo-row:hover {
+    background: #121918;
+}
+
+.jogo-mandante {
+    font-weight: 500;
+    font-size: 13px;
+    text-align: right;
+}
+
+.jogo-vs {
+    text-align: center;
+}
+
+.jogo-vs-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.jogo-vs-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    color: var(--muted2);
+    letter-spacing: 2px;
+}
+
+.jogo-data {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+}
+
+.jogo-hora {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--cyan);
+    font-weight: 600;
+}
+
 @media (max-width: 768px) {
 
     header,

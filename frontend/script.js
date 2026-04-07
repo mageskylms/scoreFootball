@@ -74,7 +74,7 @@ async function syncData() {
   btn.classList.add('loading');
   btn.textContent = '⟳ Sincronizando...';
   try {
-    const d = await api('/brasileirao/sync/classificacao');
+    const d = await api('/brasileirao/sync/dados');
     showToast(d.mensagem || 'Sincronizado!');
     loadAll();
   } catch (e) {
@@ -192,8 +192,8 @@ async function loadProjecoes() {
       const pwPos = pw ? pw.posicao_forca : '—';
       let deltaHtml = '<span class="delta-cell eq">—</span>';
       if (pw && pw.delta !== null) {
-        const dc = pw.delta < 0 ? 'up' : pw.delta > 0 ? 'dn' : 'eq';
-        const ds = pw.delta < 0 ? `▲${Math.abs(pw.delta)}` : pw.delta > 0 ? `▼${pw.delta}` : `=`;
+        const dc = pw.delta > 0 ? 'up' : pw.delta < 0 ? 'dn' : 'eq';
+        const ds = pw.delta > 0 ? `▲${Math.abs(pw.delta)}` : pw.delta < 0 ? `▼${Math.abs(pw.delta)}` : `=`;
         deltaHtml = `<span class="delta-cell ${dc}">${ds}</span>`;
       }
 
@@ -212,15 +212,29 @@ async function loadProjecoes() {
   </tr>`;
     }).join('');
 
-    // Top 5 Power sidebar
-    $('miniPower').innerHTML = (dPower || []).slice(0, 5).map(t => {
+    // Top 4 Power sidebar
+    $('miniPower').innerHTML = (dPower || []).slice(0, 4).map(t => {
       const dc = t.delta < 0 ? 'up' : t.delta > 0 ? 'dn' : 'eq';
       const ds = t.delta < 0 ? `▲${Math.abs(t.delta)} acima` : t.delta > 0 ? `▼${t.delta} abaixo` : `na posição esperada`;
       return `<div class="mini-rank-item">
     <div class="mini-rank-pos">${t.posicao_forca}</div>
     <div class="mini-rank-info">
       <div class="mini-rank-name">${t.time}</div>
-      <div class="mini-rank-meta">Atk ${t.ataque} · Def ${t.defesa} · <span class="delta-cell ${dc}" style="font-size:10px">${ds}</span></div>
+      <div class="mini-rank-meta"> Atk ${t.ataque} · Def ${t.defesa} · Atual Pos: <span class="delta-cell ${dc}" style="font-size:10px">${ds}</span></div>
+    </div>
+    <div class="mini-rank-score">${t.score}</div>
+  </div>`;
+    }).join('');
+
+    // Top 4 LOSS Power sidebar
+    $('miniLossPower').innerHTML = (dPower || []).slice(16, 20).map(t => {
+      const dc = t.delta < 0 ? 'up' : t.delta > 0 ? 'dn' : 'eq';
+      const ds = t.delta < 0 ? `▲${Math.abs(t.delta)} acima` : t.delta > 0 ? `▼${t.delta} abaixo` : `na posição esperada`;
+      return `<div class="mini-rank-item">
+    <div class="mini-rank-pos">${t.posicao_forca}</div>
+    <div class="mini-rank-info">
+      <div class="mini-rank-name">${t.time}</div>
+      <div class="mini-rank-meta"> Atk ${t.ataque} · Def ${t.defesa} · Atual Pos: <span class="delta-cell ${dc}" style="font-size:10px">${ds}</span></div>
     </div>
     <div class="mini-rank-score">${t.score}</div>
   </div>`;
@@ -343,12 +357,198 @@ async function loadEstatisticas() {
   }
 }
 
+// ── ABA 4: Simulações ─────────────────────────────
+// Monte Carlo + Previsão Avançada em paralelo
+async function loadSimulacoes() {
+  try {
+    const [dMC, dAv] = await Promise.all([
+      api('/brasileirao/previsao/monte-carlo'),
+      api('/brasileirao/tendencia/avancada'),
+    ]);
+
+    // KPIs Monte Carlo
+    const mc = dMC.previsao || [];
+    const favTitulo = mc[0];
+    const favG4 = [...mc].sort((a, b) => b['chance_g4_%'] - a['chance_g4_%'])[0];
+    const favZ4 = [...mc].sort((a, b) => b['chance_rebaixamento_%'] - a['chance_rebaixamento_%'])[0];
+
+    if (favTitulo) {
+      $('mc-fav-titulo').textContent = favTitulo.time;
+      $('mc-fav-titulo-pct').textContent = favTitulo['chance_titulo_%'].toFixed(1) + '% de chance';
+    }
+    if (favG4) {
+      $('mc-fav-g4').textContent = favG4.time;
+      $('mc-fav-g4-pct').textContent = favG4['chance_g4_%'].toFixed(1) + '% de chance';
+    }
+    if (favZ4) {
+      $('mc-fav-z4').textContent = favZ4.time;
+      $('mc-fav-z4-pct').textContent = favZ4['chance_rebaixamento_%'].toFixed(1) + '% de chance';
+    }
+
+    // Tabela Monte Carlo
+    const maxTitulo = Math.max(...mc.map(t => t['chance_titulo_%']));
+    const maxG4 = Math.max(...mc.map(t => t['chance_g4_%']));
+    const maxZ4 = Math.max(...mc.map(t => t['chance_rebaixamento_%']));
+
+    $('mcBody').innerHTML = mc.map((t, i) => {
+      const pctTitulo = t['chance_titulo_%'];
+      const pctG4 = t['chance_g4_%'];
+      const pctZ4 = t['chance_rebaixamento_%'];
+
+      const barTitulo = `<div class="mc-pct-bar">
+        <div class="mc-pct-track"><div class="mc-pct-fill" style="width:${(pctTitulo / maxTitulo * 100).toFixed(1)}%;background:var(--yellow)"></div></div>
+        <span class="mc-pct-label" style="color:var(--yellow)">${pctTitulo.toFixed(1)}%</span>
+      </div>`;
+
+      const barG4 = `<div class="mc-pct-bar">
+        <div class="mc-pct-track"><div class="mc-pct-fill" style="width:${(pctG4 / maxG4 * 100).toFixed(1)}%;background:#60a5fa"></div></div>
+        <span class="mc-pct-label" style="color:#60a5fa">${pctG4.toFixed(1)}%</span>
+      </div>`;
+
+      const barZ4 = `<div class="mc-pct-bar">
+        <div class="mc-pct-track"><div class="mc-pct-fill" style="width:${pctZ4 > 0 ? (pctZ4 / maxZ4 * 100).toFixed(1) : 0}%;background:var(--red)"></div></div>
+        <span class="mc-pct-label" style="color:var(--red)">${pctZ4.toFixed(1)}%</span>
+      </div>`;
+
+      return `<tr>
+        <td style="color:var(--muted);font-family:var(--mono);font-size:11px">${i + 1}</td>
+        <td>${t.time}</td>
+        <td style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">${t.pontos_medios.toFixed(0)}</td>
+        <td style="min-width:120px">${barTitulo}</td>
+        <td style="min-width:120px">${barG4}</td>
+        <td style="min-width:120px">${barZ4}</td>
+      </tr>`;
+    }).join('');
+
+    // Previsão Avançada
+    $('avancada-metodologia').textContent = dAv.metodologia || '';
+
+    const previsao = dAv.previsao || [];
+    $('avBody').innerHTML = previsao.map(t => {
+      const dc = t.delta < 0 ? 'up' : t.delta > 0 ? 'dn' : 'eq';
+      const ds = t.delta < 0 ? `▲${Math.abs(t.delta)}` : t.delta > 0 ? `▼${t.delta}` : `=`;
+      return `<tr>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted2)">${t.posicao_real}°</td>
+        <td>${t.time}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted2)">${t.pontos_atuais}</td>
+        <td style="font-family:var(--mono);font-size:14px;font-weight:700;color:var(--cyan)">${t.projecao_final.toFixed(0)}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted2)">${t.posicao_projetada}°</td>
+        <td><span class="delta-cell ${dc}" style="font-size:12px">${ds}</span></td>
+      </tr>`;
+    }).join('');
+
+  } catch (e) {
+    console.error(e);
+    $('mcBody').innerHTML = `<tr><td colspan="6"><div class="empty"><div class="eicon">📭</div><p>Dados indisponíveis</p></div></td></tr>`;
+    $('avBody').innerHTML = `<tr><td colspan="6"><div class="empty"><div class="eicon">📭</div><p>Dados indisponíveis</p></div></td></tr>`;
+  }
+}
+
+// ── ABA 5: Próximos Jogos ─────────────────────────
+async function loadProximosJogos() {
+  try {
+    const d = await api('/brasileirao/proximos-jogos');
+    const rodadas = d.rodadas || [];
+
+    rodadas.sort((a, b) => a.numero - b.numero);
+
+    $('pj-total').textContent = d.total_jogos || '—';
+    $('pj-proxima-rodada').textContent = rodadas[0] ? `R${rodadas[0].numero}` : '—';
+    $('pj-rodadas-count').textContent = rodadas.length || '—';
+
+    if (rodadas.length === 0) {
+      $('jogosContainer').innerHTML = `
+        <div class="empty">
+          <div class="eicon">📭</div>
+          <p>Nenhum jogo agendado.</p>
+        </div>`;
+      return;
+    }
+
+    $('jogosContainer').innerHTML = rodadas.map((rodadaObj, idx) => {
+      const jogos = rodadaObj.jogos || [];
+      const rodadaNumero = rodadaObj.numero;
+      const isOpen = idx === 0 ? 'open' : '';
+
+      const jogosHtml = jogos.map(j => {
+        let dataLabel = j.data;
+
+        try {
+          const parts = j.data.split('-');
+          if (parts.length === 3) {
+            const [dia, mes, ano] = parts;
+
+            const dt = new Date(ano, mes - 1, dia);
+
+            dataLabel = dt.toLocaleDateString('pt-BR', {
+              weekday: 'short',
+              day: '2-digit',
+              month: 'short'
+            });
+          }
+        } catch { }
+
+        console.log(j.data, '=>', dataLabel);
+
+        return `
+          <div class="jogo-row">
+            <div class="jogo-mandante">${j.mandante}</div>
+            <div class="jogo-vs">
+              <div class="jogo-vs-badge">
+                <span class="jogo-vs-text">VS</span>
+                <span class="jogo-hora">${j.hora}</span>
+                <span class="jogo-data">${dataLabel}</span>
+              </div>
+            </div>
+            <div class="jogo-visitante">${j.visitante}</div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="rodada-block">
+          <div class="rodada-header" onclick="toggleRodada(this)">
+            <span class="rodada-title">Rodada ${rodadaNumero}</span>
+            <div style="display:flex;align-items:center;gap:12px">
+              <span class="rodada-count">
+                ${jogos.length} jogo${jogos.length !== 1 ? 's' : ''}
+              </span>
+              <span class="rodada-toggle ${isOpen}">▾</span>
+            </div>
+          </div>
+          <div class="rodada-jogos ${isOpen}">
+            ${jogosHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+  } catch (e) {
+    console.error(e);
+    $('jogosContainer').innerHTML = `
+      <div class="empty">
+        <div class="eicon">📭</div>
+        <p>Dados indisponíveis. Clique em <strong>Sincronizar</strong>.</p>
+      </div>`;
+  }
+}
+
+// Toggle das rodadas (accordion)
+function toggleRodada(el) {
+  const jogos = el.nextElementSibling;
+  const toggle = el.querySelector('.rodada-toggle');
+  jogos.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
 // ── Init ─────────────────────────────────────────
 // Ponto de entrada (Entry point) de dados. Carrega todas as métricas em paralelo assim que a página renderiza.
 function loadAll() {
   loadClassificacao();
   loadProjecoes();
   loadEstatisticas();
+  loadSimulacoes();
+  loadProximosJogos();
 }
 
 checkStatus();

@@ -61,11 +61,15 @@ class Jogo(BaseModel):
     rodada: int
     mandante: str
     visitante: str
+    
+class Rodada(BaseModel):
+    numero: int
+    jogos: List[Jogo]
 
 class ProximosJogosResponse(BaseModel):
     status: str
     total_jogos: int
-    rodadas: Dict[str, List[Jogo]]
+    rodadas: List[Rodada]
 
 # --- TENDÊNCIA BÁSICA ---
 

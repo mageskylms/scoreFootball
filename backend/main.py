@@ -17,7 +17,7 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="ScoreFootball API",
     description="API para análise e previsões do Brasileirão",
-    version="1.15.0",
+    version="1.4.0",
     debug=True,
 )
 

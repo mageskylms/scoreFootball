@@ -7,6 +7,7 @@ from typing import cast
 import models
 import numpy as np
 from zoneinfo import ZoneInfo
+from collections import defaultdict
 
 # Arquivo de Serviço (Service Layer).
 # Concentra toda a regra de negócio, integrações com APIs externas e algoritmos matemáticos preditivos.
@@ -45,7 +46,7 @@ def sync_dados(db: Session):
     url_classificacao = f"https://api.football-data.org/v4/competitions/{COMPETITION}/standings"
     url_jogos = f"https://api.football-data.org/v4/competitions/{COMPETITION}/matches?status=SCHEDULED"
     headers = {"X-Auth-Token": API_KEY}
-    
+    print(f"[DEBUG] Sincronizando dados da API... {API_KEY}")
     try:
         # 1. Puxa a Classificação
         resp_class = requests.get(url_classificacao, headers=headers)
@@ -97,7 +98,7 @@ def sync_dados(db: Session):
         # Efetiva as transações no banco de dados todas de uma vez (segurança transacional)
         db.commit() 
         
-        return {"status": "sucesso", "mensagem": "Classificação e Agenda atualizadas!", "Dados usados: ": dados_jogos}
+        return {"status": "sucesso", "mensagem": "Classificação e Agenda atualizadas!"}
         
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Erro de conexão: {str(e)}")
@@ -128,35 +129,39 @@ def get_classificacao(db: Session):
     }
     
 def get_proximos_jogos(db: Session):
-    partidas = db.query(models.PartidaFutura).order_by(models.PartidaFutura.rodada.asc()).all()
+    partidas = db.query(models.PartidaFutura)\
+        .order_by(models.PartidaFutura.rodada.asc())\
+        .all()
     
     if not partidas:
         raise HTTPException(status_code=404, detail="Sem jogos futuros cadastrados.")
 
-    jogos_formatados = []
-    
+    rodadas_map = defaultdict(list)
 
     for p in partidas:
         data_local = p.data.astimezone(ZoneInfo("America/Sao_Paulo"))
-        jogos_formatados.append({
+
+        jogo = {
             "data": data_local.date().strftime("%d-%m-%Y"),
             "hora": data_local.time().strftime("%H:%M"),
             "rodada": p.rodada,
             "mandante": p.time_mandante,
             "visitante": p.time_visitante
-        })
+        }
 
-    # Estrutura os jogos agrupando-os por rodada, facilitando a iteração e renderização de cards no Frontend.
-    rodadas = {}
-    for jogo in jogos_formatados:
-        rodada = jogo["rodada"]
-        if rodada not in rodadas:
-            rodadas[rodada] = []
-        rodadas[rodada].append(jogo)
+        rodadas_map[p.rodada].append(jogo)
+
+    rodadas = [
+        {
+            "numero": rodada,
+            "jogos": jogos
+        }
+        for rodada, jogos in sorted(rodadas_map.items())
+    ]
 
     return {
         "status": "sucesso",
-        "total_jogos": len(jogos_formatados),
+        "total_jogos": sum(len(j) for j in rodadas_map.values()),
         "rodadas": rodadas
     }
     
@@ -347,74 +352,6 @@ def power_ranking(db: Session):
         t["delta"] = t["posicao_real"] - t["posicao_forca"]
 
     return ranking
-
-# def previsao_avancada(db: Session):
-    # Modelo preditivo mais realista. Ao invés de usar média global, simula cada partida
-    # futura de forma isolada, cruzando o ataque do Mandante contra a defesa do Visitante.
-
-#     times = db.query(models.Classificacao).all()
-#     partidas_futuras = db.query(models.PartidaFutura).all()
-    
-#     if not times:
-#         raise HTTPException(status_code=404, detail="Sincronize os dados primeiro.")
-
-#     # 1. Pegamos a força de cada time usando a sua função de Power Ranking
-#     forcas = power_ranking(db)
-#     dict_forca = { t["time"]: t["score"] for t in forcas }
-    
-#     # 2. Mapeamos contra quem cada time ainda vai jogar
-#     agenda = { t.nome_time: [] for t in times }
-#     for p in partidas_futuras:
-#         if p.time_mandante in agenda:
-#             agenda[p.time_mandante].append(p.time_visitante)
-#         if p.time_visitante in agenda:
-#             agenda[p.time_visitante].append(p.time_mandante)
-            
-#     projecao_lista = []
-    
-#     for t in times:
-#         adversarios = agenda.get(t.nome_time, [])
-#         qtd_jogos_restantes = len(adversarios)
-        
-#         # Calcula a média da força dos times que vai enfrentar
-#         soma_forca_adv = sum(dict_forca.get(adv, 1.0) for adv in adversarios)
-#         dificuldade_tabela = (soma_forca_adv / qtd_jogos_restantes) if qtd_jogos_restantes > 0 else 1.0
-        
-#         # Pega a expectativa base atual (seu cálculo de frequência)
-#         freq_vitoria = t.vitorias / t.jogos if t.jogos > 0 else 0
-#         freq_empate = t.empates / t.jogos if t.jogos > 0 else 0
-#         epj_base = (freq_vitoria * 3) + (freq_empate * 1)
-        
-#         # O PULO DO GATO: Ajuste do EPJ.
-#         # Se a dificuldade for alta (>1), o EPJ Base cai. Se for baixa (<1), sobe.
-#         epj_ajustado = epj_base / dificuldade_tabela if dificuldade_tabela > 0 else epj_base
-        
-#         pontos_finais = t.pontos + (qtd_jogos_restantes * epj_ajustado)
-        
-#         projecao_lista.append({
-#             "time": t.nome_time,
-#             "pontos_atuais": t.pontos,
-#             "jogos_restantes_verificados": qtd_jogos_restantes,
-#             "indice_dificuldade": round(dificuldade_tabela, 2), # > 1 difícil, < 1 fácil
-#             "epj_base": round(epj_base, 2),
-#             "epj_ajustado": round(epj_ajustado, 2),
-#             "projecao_final": round(pontos_finais, 1)
-#         })
-        
-#     posicoes_atuais = { t.nome_time: t.posicao for t in times }
-
-#     # Ordena pelo novo modelo preditivo
-#     projecao_lista.sort(key=lambda x: x["projecao_final"], reverse=True)
-
-#     for i, item in enumerate(projecao_lista):
-#         item["posicao_real"] = posicoes_atuais.get(item["time"], 999) 
-#         item["posicao_projetada"] = i + 1
-#         item["delta"] = item["posicao_real"] - item["posicao_projetada"]
-
-#     return {
-#         "metodologia": "Modelo Preditivo (Frequência Relativa x Dificuldade de Calendário)",
-#         "previsao": projecao_lista
-#     }
 
 def previsao_avancada(db: Session):
     times = db.query(models.Classificacao).all()
