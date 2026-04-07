@@ -1,5 +1,5 @@
 # ⚽ ScoreFootball 
-### Versão 1.15.0 - Abril de 2026
+### Versão 1.4.0 - Abril de 2026
 
 Plataforma de análise e previsão do Brasileirão baseada em dados reais.
 
