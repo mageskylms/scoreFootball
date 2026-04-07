@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScoreFootball — Brasileirão</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚽</div>
+    <h1>Score<span>Football</span></h1>
+  </div>
+  <div class="hdr-right">
+    <div class="api-pill">
+      <div class="dot" id="apiDot"></div>
+      <span id="apiStatus">conectando...</span>
+    </div>
+    <button class="btn-sync" id="btnSync" onclick="syncData()">↻ Sincronizar</button>
+  </div>
+</header>
+
+<nav>
+  <div class="tab active" data-page="p-class"  onclick="switchTab(this)">🏆 Classificação</div>
+  <div class="tab"        data-page="p-proj"   onclick="switchTab(this)">📈 Projeções</div>
+  <div class="tab"        data-page="p-estat"  onclick="switchTab(this)">📊 Estatísticas</div>
+</nav>
+
+<main>
+
+  <!-- ═══════════════ ABA 1 — CLASSIFICAÇÃO ═══════════════ -->
+  <div class="page active" id="p-class">
+    <div class="kpi-row">
+      <div class="kpi" style="--kpi-color:var(--green)">
+        <div class="kpi-label">Total de Gols</div>
+        <div class="kpi-val" id="k-gols">—</div>
+        <div class="kpi-sub">no campeonato</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--yellow)">
+        <div class="kpi-label">Partidas</div>
+        <div class="kpi-val" id="k-partidas">—</div>
+        <div class="kpi-sub">realizadas</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--blue)">
+        <div class="kpi-label">Média Gols/Jogo</div>
+        <div class="kpi-val" id="k-media">—</div>
+        <div class="kpi-sub">por partida</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--cyan)">
+        <div class="kpi-label">Rodada Atual</div>
+        <div class="kpi-val" id="k-rodada">—</div>
+        <div class="kpi-sub">de 38</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--orange)">
+        <div class="kpi-label">Times</div>
+        <div class="kpi-val" id="k-times">—</div>
+        <div class="kpi-sub">na competição</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>⚽ Tabela de Classificação</h2>
+        <span class="chip" id="season-chip">—</span>
+      </div>
+      <div class="class-table-wrap">
+        <table class="class-table">
+          <thead>
+            <tr>
+              <th>#</th><th>Time</th><th>PTS</th><th>J</th>
+              <th>V</th><th>E</th><th>D</th><th>GF</th><th>GS</th><th>SG</th>
+            </tr>
+          </thead>
+          <tbody id="classBody">
+            <tr><td colspan="10"><div style="padding:8px">
+              <div class="skel" style="height:32px;margin-bottom:6px"></div>
+              <div class="skel" style="height:32px;margin-bottom:6px"></div>
+              <div class="skel" style="height:32px"></div>
+            </div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div> G4 — Libertadores (fase de grupos)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#93c5fd"></div> G5 — Pré-Libertadores</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#67e8f9"></div> G6 — Sul-Americana (6º ao 12º)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4e6860"></div> Meio de tabela</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div> Z4 — Rebaixamento</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ABA 2 — PROJEÇÕES ═══════════════ -->
+  <div class="page" id="p-proj">
+    <div class="proj-grid">
+
+      <div>
+        <div class="card">
+          <div class="card-head">
+            <h2>📋 Projeções Unificadas</h2>
+            <span class="chip muted" style="font-size:9px">Média · Frequência · Power Ranking</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="proj-table">
+              <thead>
+                <tr class="group-hdr">
+                  <th colspan="2" style="text-align:left;padding-left:12px">Time</th>
+                  <th colspan="3" class="sep" style="color:var(--green)">— Projeção por Média —</th>
+                  <th colspan="3" class="sep" style="color:var(--cyan)">— Projeção por Frequência —</th>
+                  <th colspan="3" class="sep" style="color:var(--yellow)">— Power Ranking —</th>
+                </tr>
+                <tr>
+                  <th>#</th>
+                  <th style="text-align:left">Time</th>
+                  <th class="sep">Aprv.</th>
+                  <th>Proj.Pts</th>
+                  <th>Status</th>
+                  <th class="sep">% Vitória</th>
+                  <th>Proj.Pts</th>
+                  <th>Δ Métodos</th>
+                  <th class="sep">Score</th>
+                  <th>Pos.Força</th>
+                  <th>Δ Tabela</th>
+                </tr>
+              </thead>
+              <tbody id="projBody">
+                <tr><td colspan="11">
+                  <div class="empty"><div class="eicon">⏳</div><p>Carregando projeções...</p></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Proj. por Média (aproveitamento atual)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div> Proj. por Frequência (V/E/D relativo)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div> Power Score (ataque ÷ defesa vs. liga)</div>
+            <div class="legend-item" style="color:var(--muted);font-size:10px">Δ Métodos = diferença entre as duas projeções · Δ Tabela: ▲ melhor que parece, ▼ pior</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="proj-sidebar">
+        <div class="insight-card green">
+          <div class="ic-label">🏆 Campeão — Projeção por Média</div>
+          <div class="ic-team" id="ic-campeao-media">—</div>
+          <div class="ic-detail" id="ic-msg-media">—</div>
+        </div>
+        <div class="insight-card cyan">
+          <div class="ic-label">🔮 Campeão — Projeção por Frequência</div>
+          <div class="ic-team" id="ic-campeao-freq">—</div>
+          <div class="ic-detail" id="ic-msg-freq">—</div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h3>⚡ Top 5 Power Ranking</h3>
+            <span class="chip yellow">Score</span>
+          </div>
+          <div class="mini-rank" id="miniPower">
+            <div class="empty" style="padding:16px"><div class="eicon">⏳</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ABA 3 — ESTATÍSTICAS ═══════════════ -->
+  <div class="page" id="p-estat">
+    <div class="kpi-row">
+      <div class="kpi" style="--kpi-color:var(--green)">
+        <div class="kpi-label">Total Gols</div>
+        <div class="kpi-val" id="es-gols">—</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--yellow)">
+        <div class="kpi-label">Partidas Registradas</div>
+        <div class="kpi-val" id="es-partidas">—</div>
+      </div>
+      <div class="kpi" style="--kpi-color:var(--blue)">
+        <div class="kpi-label">Rodada Atual</div>
+        <div class="kpi-val" id="es-rodada">—</div>
+      </div>
+    </div>
+
+    <!-- Extremos + Zonas — lado a lado, contexto integrado -->
+    <div class="estat-grid" style="margin-bottom:20px">
+      <div class="card">
+        <div class="card-head"><h3>🎯 Extremos do Campeonato</h3></div>
+        <div class="extremos-wrap" id="extremosWrap">
+          <div class="empty"><div class="eicon">⏳</div><p>Carregando...</p></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>🗺️ Zonas de Classificação</h3></div>
+        <div id="zonesWrap">
+          <div class="empty"><div class="eicon">⏳</div><p>Carregando...</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ataques + Defesas — lado a lado -->
+    <div class="estat-grid">
+      <div class="card">
+        <div class="card-head">
+          <h3>⚽ Top 4 Ataques</h3>
+          <span class="chip">Gols Feitos</span>
+        </div>
+        <div class="rank-bars" id="rankAtaque">
+          <div class="empty" style="padding:16px"><div class="eicon">⏳</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h3>🛡️ Top 4 Piores Defesas</h3>
+          <span class="chip red">Gols Sofridos</span>
+        </div>
+        <div class="rank-bars" id="rankDefesa">
+          <div class="empty" style="padding:16px"><div class="eicon">⏳</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

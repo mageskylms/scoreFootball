@@ -1,0 +1,5 @@
+# Ignorar variáveis de ambiente com credenciais e chaves
+.env
+
+# Ignorar caches e diretórios padrão do Python
+__pycache__/

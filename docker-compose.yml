@@ -1,0 +1,50 @@
+# Arquivo de orquestração de containers para ambiente de desenvolvimento
+services:
+
+  # Serviço de Banco de Dados (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: scorefootball_db
+    restart: always # Garante que o banco reinicie automaticamente em caso de falha
+    environment:
+      # Credenciais e configurações de inicialização do banco
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: scorefootball
+    ports:
+      - "5432:5432" # Mapeamento de portas: <Porta_Host>:<Porta_Container>
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Volume nomeado para persistência física dos dados
+
+  # Serviço de Backend (API em FastAPI)
+  backend:
+    build: 
+      context: ./backend # Diretório contendo o Dockerfile da aplicação
+    container_name: scorefootball_backend
+    ports:
+      - "8000:8000" # Expondo a API na porta 8000 do host
+    depends_on:
+      - db # Garante que o backend inicie após o container do banco de dados ser criado
+    volumes:
+      - ./backend:/app # Bind mount para Hot Reload (atualiza o código no container sem precisar rebuildar)
+    env_file:
+      - .env # Carrega as variáveis de ambiente a partir do arquivo .env
+    environment:
+      # Variáveis de ambiente consumidas pela aplicação
+      - DATABASE_URL=postgresql://admin:adminpassword@db:5432/scorefootball
+
+  # Serviço de Frontend (Arquivos estáticos servidos pelo servidor web Nginx)
+  frontend:
+    image: nginx:alpine
+    container_name: scorefootball_frontend
+    ports:
+      - "3000:80" # Acessível no navegador em localhost:3000 (redireciona para a porta 80 do Nginx)
+    volumes:
+      - ./frontend:/usr/share/nginx/html # Injeta os arquivos HTML/CSS/JS diretamente no diretório base do Nginx
+    depends_on:
+      - backend
+
+# Declaração de Volumes
+volumes:
+  postgres_data: 
+    # Volume gerenciado pelo Docker para garantir que os dados do DB sobrevivam à remoção dos containers
